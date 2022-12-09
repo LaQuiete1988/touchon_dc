@@ -1,0 +1,92 @@
+version: '3.4'
+
+# Services
+services:
+
+  # Nginx Service
+  nginx:
+    build:
+      context: ./nginx/
+    container_name: touchon_nginx
+    restart: always
+    tty: true
+    ports:
+      - 80:80
+      - 8080:8080
+    volumes:
+      - admcore:/var/www
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php-fpm
+    networks:
+      - touchon-network
+
+  # MySQL Service
+  mysql:
+    env_file:
+      - ../.env
+    build:
+      context: ./mysql/
+    container_name: touchon_mysql
+    restart: always
+    tty: true
+    ports:
+      - 3306:3306
+    volumes:
+      - mysqldata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      retries: 10
+    networks:
+      - touchon-network
+
+  # PHP Service
+  php-fpm:
+    env_file:
+      ../.env
+    build:
+      context: ./php-fpm/
+      dockerfile: Dockerfile
+    container_name: touchon_php-fpm
+    restart: always
+    tty: true
+    ports:
+      - 8000:8000
+      - 9000:9000
+    working_dir: /var/www/
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - admcore:/var/www
+    networks:
+      - touchon-network
+
+  # PhpMyAdmin Service
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    container_name: touchon_phpmyadmin
+    restart: always
+    tty: true
+    ports:
+      - 7000:80
+    environment:
+       PMA_HOST: mysql
+       PMA_PORT: 3306
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - touchon-network
+
+#Docker Networks
+networks:
+  touchon-network:
+    driver: bridge
+
+
+# Volumes
+volumes:
+  mysqldata:
+  admcore:

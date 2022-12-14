@@ -61,7 +61,6 @@ services:
         condition: service_healthy
     volumes:
       - admcore:/var/www
-      - backup:/var/backup
     networks:
       - touchon-network
 
@@ -90,6 +89,7 @@ services:
     restart: always
     tty: true
     volumes:
+      - admcore:/var/www
       - backup:/var/backup
     depends_on:
       - php-fpm

@@ -106,3 +106,4 @@ networks:
 volumes:
   mysqldata:
   admcore:
+  backup:

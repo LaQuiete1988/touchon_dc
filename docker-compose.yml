@@ -34,6 +34,7 @@ services:
       - 3306:3306
     volumes:
       - mysqldata:/var/lib/mysql
+      - backup:/var/backup
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 5s
@@ -60,6 +61,7 @@ services:
         condition: service_healthy
     volumes:
       - admcore:/var/www
+      - backup:/var/backup
     networks:
       - touchon-network
 
@@ -77,6 +79,20 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+    networks:
+      - touchon-network
+
+  #BackUp Service
+  backup:
+    build:
+      context: ./backup/
+    container_name: touchon_backup
+    restart: always
+    tty: true
+    volumes:
+      - backup:/var/backup
+    depends_on:
+      - php-fpm
     networks:
       - touchon-network
 

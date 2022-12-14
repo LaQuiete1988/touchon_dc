@@ -17,4 +17,4 @@ RUN apk update \
  && cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini \
  && sed -i 's/;date.timezone =/date.timezone = Europe\/Moscow/' /usr/local/etc/php/php.ini
 
-CMD bash -c "crond && php-fpm"
+CMD /bin/sh -c "crond && php-fpm"

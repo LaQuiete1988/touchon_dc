@@ -13,6 +13,6 @@ RUN apk update && apk add --no-cache mysql mysql-client tzdata \
 COPY docker-entrypoint.sh /
 COPY my.cnf /etc/mysql/my.cnf
 
-RUN chmod +x /docker-entrypoint.sh /backup.sh
+RUN chmod +x /docker-entrypoint.sh
 
 ENTRYPOINT ["/docker-entrypoint.sh"]

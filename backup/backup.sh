@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
 
 # Directory to store backups
-dir="/var/backup/"
+dir="/var/backup"
 
-tar 10-8-0-1_mobile.tar.gz ${dir}/*
+cd /var/backup && tar cfz 10-8-0-1_mobile.tar.gz .
 
 # rsync -azq --delete --remove-source-files \
 # /var/backup/10-8-0-1_mobile.tar.gz \

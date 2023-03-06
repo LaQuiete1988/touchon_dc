@@ -83,6 +83,8 @@ services:
 
   #BackUp Service
   backup:
+    env_file:
+      - ../.env
     build:
       context: ./backup/
     container_name: touchon_backup
@@ -91,6 +93,7 @@ services:
     volumes:
       - admcore:/var/www
       - backup:/var/backup
+      - sshkeys:/root/.ssh
     depends_on:
       - php-fpm
     networks:
@@ -107,3 +110,4 @@ volumes:
   mysqldata:
   admcore:
   backup:
+  sshkeys:

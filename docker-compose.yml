@@ -34,6 +34,7 @@ services:
       - 3306:3306
     volumes:
       - mysqldata:/var/lib/mysql
+      - backup:/var/backup
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 5s
@@ -44,7 +45,7 @@ services:
   # PHP Service
   php-fpm:
     env_file:
-      ../.env
+      - ../.env
     build:
       context: ./php-fpm/
       dockerfile: Dockerfile
@@ -80,6 +81,24 @@ services:
     networks:
       - touchon-network
 
+  #BackUp Service
+  backup:
+    env_file:
+      - ../.env
+    build:
+      context: ./backup/
+    container_name: touchon_backup
+    restart: always
+    tty: true
+    volumes:
+      - admcore:/var/www
+      - backup:/var/backup
+      - sshkeys:/root/.ssh
+    depends_on:
+      - php-fpm
+    networks:
+      - touchon-network
+
 #Docker Networks
 networks:
   touchon-network:
@@ -90,3 +109,5 @@ networks:
 volumes:
   mysqldata:
   admcore:
+  backup:
+  sshkeys:

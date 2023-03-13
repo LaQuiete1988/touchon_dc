@@ -5,7 +5,7 @@ ENV TZ=Europe/Moscow
 WORKDIR /var/www
 
 RUN apk update \
- && apk add --no-cache git tzdata \
+ && apk add --no-cache git tzdata lftp \
  && docker-php-ext-install bcmath mysqli pdo_mysql pcntl \
  && crontab -r \
  && crontab -l | { cat; echo "*/1 * * * * cd /var/www/server && php watchdog.php >> /var/log/cron.log 2>&1"; } | crontab - \

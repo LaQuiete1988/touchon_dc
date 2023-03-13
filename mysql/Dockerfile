@@ -6,7 +6,8 @@ RUN apk update && apk add --no-cache mysql mysql-client tzdata \
  && mkdir /var/backup/ \
  && crontab -r \
  && crontab -l | \
- { cat; echo "00 01 * * * cd / && ./backup.sh >> /var/log/cron.log 2>&1"; } | crontab -
+ { cat; echo "00 01 * * * cd / && ./backup.sh >> /var/log/cron.log 2>&1"; } | crontab - \
+ && [ -f /var/log/cron.log ] || touch /var/log/cron.log
 
 COPY docker-entrypoint.sh backup.sh /
 COPY my.cnf /etc/mysql/my.cnf

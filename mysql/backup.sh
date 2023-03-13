@@ -17,7 +17,7 @@ mysqldump -u${MYSQL_USER} -p${MYSQL_PASSWORD} ${MYSQL_DATABASE} \
 | gzip > ${backupDir}/daily/db_backup.sql.gz
 
 if [[ -f ${backupDir}/daily/db_backup.sql.gz ]]; then
-    echo "$(date +'%b %d %H:%M:%S')  MySQL [OK] DB backup is done"
+    echo "$(date +'%b %d %H:%M:%S')  MySQL [OK] DB backup is done" >> /var/log/cron.log
 else
-    echo "$(date +'%b %d %H:%M:%S')  MySQL [ERROR] DB backup failed"
+    echo "$(date +'%b %d %H:%M:%S')  MySQL [ERROR] DB backup failed" >> /var/log/cron.log
 fi

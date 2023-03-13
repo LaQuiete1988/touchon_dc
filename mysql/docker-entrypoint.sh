@@ -12,11 +12,6 @@ else
   chown -R mysql:mysql /var/lib/mysql
   mysql_install_db --user=mysql > /dev/null
 
-  # MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-""}
-  # MYSQL_DATABASE=${MYSQL_DATABASE:-""}
-  # MYSQL_USER=${MYSQL_USER:-""}
-  # MYSQL_PASSWORD=${MYSQL_PASSWORD:-""}
-
   tfile=`mktemp`
   if [ ! -f "$tfile" ]; then
       return 1
@@ -24,11 +19,11 @@ else
 
   cat << EOF > $tfile
 FLUSH PRIVILEGES;
-CREATE DATABASE ${MYSQL_DATABASE:-""} CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE DATABASE $MYSQL_DATABASE CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 DROP DATABASE test;
 DROP USER ''@'localhost';
-GRANT ALL ON ${MYSQL_DATABASE:-""}.* to '${MYSQL_USER:-""}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD:-""}';
-ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD:-""}';
+GRANT ALL ON $MYSQL_DATABASE.* to '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD';
+ALTER USER 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD';
 FLUSH PRIVILEGES;
 EOF
 

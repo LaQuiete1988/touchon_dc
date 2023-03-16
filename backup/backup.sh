@@ -54,7 +54,7 @@ if [[ ${CLIENT_DIR} != "new_client" ]]; then
     readmeBackup daily
 
     tar zcvf - /var/backup/daily | \
-    ssh ${sshUser}@${sshServer} -p ${sshPort} "[ -d ${backupDir}/${CLIENT_DIR} ] || mkdir ${backupDir}/${CLIENT_DIR} \
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${sshUser}@${sshServer} -p ${sshPort} "[ -d ${backupDir}/${CLIENT_DIR} ] || mkdir ${backupDir}/${CLIENT_DIR} \
         && cat > ${backupDir}/${CLIENT_DIR}/daily.tar.gz"
 
     if [ $? -eq 0 ]; then
@@ -70,7 +70,7 @@ if [[ ${CLIENT_DIR} != "new_client" ]]; then
         userscriptsBackup weekly
         readmeBackup weekly
         cp ${sourceDir}/daily/db_backup.sql.gz ${sourceDir}/weekly
-        tar zcvf - /var/backup/weekly | ssh ${sshUser}@${sshServer} -p ${sshPort} "cat > ${backupDir}/${CLIENT_DIR}/weekly.tar.gz"
+        tar zcvf - /var/backup/weekly | ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${sshUser}@${sshServer} -p ${sshPort} "cat > ${backupDir}/${CLIENT_DIR}/weekly.tar.gz"
         
         if [ $? -eq 0 ]; then
             echo "$(date +'%b %d %H:%M:%S')  Backup [OK] Weekly backup was syncronized with BackupServer." \

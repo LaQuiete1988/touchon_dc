@@ -48,14 +48,14 @@ function readmeBackup ()
     fi
 }
 
-if [[ ${CLIENT_DIR} != "new_client" ]]; then
+if [[ ${SSH_CLIENT_DIR} != "new_client" ]]; then
 
     userscriptsBackup daily
     readmeBackup daily
 
     tar zcvf - /var/backup/daily | \
-    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${sshUser}@${sshServer} -p ${sshPort} "[ -d ${backupDir}/${CLIENT_DIR} ] || mkdir ${backupDir}/${CLIENT_DIR} \
-        && cat > ${backupDir}/${CLIENT_DIR}/daily.tar.gz"
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${sshUser}@${sshServer} -p ${sshPort} "[ -d ${backupDir}/${SSH_CLIENT_DIR} ] || mkdir ${backupDir}/${SSH_CLIENT_DIR} \
+        && cat > ${backupDir}/${SSH_CLIENT_DIR}/daily.tar.gz"
 
     if [ $? -eq 0 ]; then
             echo "$(date +'%b %d %H:%M:%S')  Backup [OK] Daily backup was syncronized with BackupServer." \
@@ -70,7 +70,7 @@ if [[ ${CLIENT_DIR} != "new_client" ]]; then
         userscriptsBackup weekly
         readmeBackup weekly
         cp ${sourceDir}/daily/db_backup.sql.gz ${sourceDir}/weekly
-        tar zcvf - /var/backup/weekly | ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${sshUser}@${sshServer} -p ${sshPort} "cat > ${backupDir}/${CLIENT_DIR}/weekly.tar.gz"
+        tar zcvf - /var/backup/weekly | ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${sshUser}@${sshServer} -p ${sshPort} "cat > ${backupDir}/${SSH_CLIENT_DIR}/weekly.tar.gz"
         
         if [ $? -eq 0 ]; then
             echo "$(date +'%b %d %H:%M:%S')  Backup [OK] Weekly backup was syncronized with BackupServer." \
@@ -83,6 +83,6 @@ if [[ ${CLIENT_DIR} != "new_client" ]]; then
     fi
 
 else
-    echo "$(date +'%b %d %H:%M:%S')  Backup [ERROR] CLIENT_DIR variable in .env file is not set." \
+    echo "$(date +'%b %d %H:%M:%S')  Backup [ERROR] SSH_CLIENT_DIR variable in .env file is not set." \
         >> /var/log/cron.log
 fi

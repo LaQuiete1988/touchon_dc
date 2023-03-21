@@ -7,20 +7,39 @@ sshUser=${SSH_USER}
 sshServer=${SSH_SERVER}
 sshPort=${SSH_PORT}
 sshClientDir=${SSH_CLIENT_DIR}
+mysqlHost=${MYSQL_HOST}
+mysqlUser=${MYSQL_USER}
+mysqlPassword=${MYSQL_PASSWORD}
+mysqlDatabase=${MYSQL_DATABASE}
+
 
 function userscriptsBackup ()
 {
-    rsync -azh --delete /var/www/server/userscripts ${sourceDir}/$1
+    rsync -azh --delete /var/www/server/userscripts $sourceDir/daily
     if [ $? -eq 0 ]; then
-            echo "$(date +'%b %d %H:%M:%S')  Backup [OK] Userscripts $1 backup done." \
+            echo "$(date +'%b %d %H:%M:%S')  Backup [OK] Userscripts daily backup succeeded." \
                 >> /var/log/cron.log
         else
-            echo "$(date +'%b %d %H:%M:%S')  Backup [ERROR] Userscripts $1 backup failed." \
+            echo "$(date +'%b %d %H:%M:%S')  Backup [ERROR] Userscripts daily backup failed." \
                 >> /var/log/cron.log
         fi
 }
 
-function readmeBackup ()
+
+function dbBackup ()
+{
+    mysqldump --host=$mysqlHost --user=$mysqlUser --password=$mysqlPassword $mysqlDatabase \
+        | gzip > $sourceDir/daily/db_backup.sql.gz
+
+    if [[ -f $sourceDir/daily/db_backup.sql.gz ]]; then
+        echo "$(date +'%b %d %H:%M:%S')  MySQL [OK] DB daily backup is succeeded" >> /var/log/cron.log
+    else
+        echo "$(date +'%b %d %H:%M:%S')  MySQL [ERROR] DB daily backup failed" >> /var/log/cron.log
+    fi
+}
+
+
+function versionsBackup ()
 {
     if [[ -f /var/www/server/readme.md ]]; then
         coreCurrentVersion=$(sed -n '/.*ver /s///p' < /var/www/server/readme.md)
@@ -34,56 +53,64 @@ function readmeBackup ()
         admCurrentVersion=$(sed -n '/.*ver /s///p' < /var/www/adm/README.MD)
     fi
 
-    if [[ ! -f ${sourceDir}/$1/versions.txt ]]; then
-        touch ${sourceDir}/$1/versions.txt
+    if [[ ! -f $sourceDir/daily/versions.txt ]]; then
+        touch $sourceDir/daily/versions.txt
     else
-        coreBackupVersion=$(cat ${sourceDir}/$1/versions.txt | grep 'CORE' | awk '{printf $3}')
-        admBackupVersion=$(cat ${sourceDir}/$1/versions.txt | grep 'ADM' | awk '{printf $3}')
+        coreBackupVersion=$(cat $sourceDir/daily/versions.txt | grep 'CORE' | awk '{printf $3}')
+        admBackupVersion=$(cat $sourceDir/daily/versions.txt | grep 'ADM' | awk '{printf $3}')
     fi
 
     if [[ "$coreBackupVersion" != "$coreCurrentVersion" || \
           "$admBackupVersion" != "$admCurrentVersion" ]]; then
-        echo -e "CORE version $coreCurrentVersion\nADM version $admCurrentVersion" > ${sourceDir}/$1/versions.txt
+        echo -e "CORE version $coreCurrentVersion\nADM version $admCurrentVersion" > $sourceDir/daily/versions.txt
         echo "$(date +'%b %d %H:%M:%S')  Backup [OK] Adm and core versions updated." \
                 >> /var/log/cron.log
     fi
 }
 
-# if [[ $sshClientDir ]]; then
+if [[ ! -d $sourceDir/daily ]]; then
+    mkdir $sourceDir/daily
+fi
+
+if [[ ! -d $sourceDir/weekly ]]; then
+    mkdir $sourceDir/weekly
+fi
+
 if [[ "${sshClientDir:-unset}" == "unset" ]]; then
     
     echo "$(date +'%b %d %H:%M:%S')  Backup [ERROR] SSH_CLIENT_DIR variable in .env file is not set." \
         >> /var/log/cron.log
 
 else
-    
-    userscriptsBackup daily
-    readmeBackup daily
+
+    userscriptsBackup
+    versionsBackup
+    dbBackup
 
     tar zcvf - /var/backup/daily | \
-    ssh ${sshUser}@${sshServer} -p ${sshPort} "[ -d $backupDir/$sshClientDir ] || mkdir $backupDir/$sshClientDir \
+        ssh $sshUser@$sshServer -p $sshPort "[ -d $backupDir/$sshClientDir ] || mkdir $backupDir/$sshClientDir \
         && cat > $backupDir/$sshClientDir/daily.tar.gz"
 
     if [ $? -eq 0 ]; then
-            echo "$(date +'%b %d %H:%M:%S')  Backup [OK] Daily backup was syncronized with BackupServer." \
+            echo "$(date +'%b %d %H:%M:%S')  Backup [OK] Daily backup syncronization with BackupServer succeeded." \
                 >> /var/log/cron.log
         else
-            echo "$(date +'%b %d %H:%M:%S')  Backup [ERROR] Daily backup has not syncronized with BackupServer." \
+            echo "$(date +'%b %d %H:%M:%S')  Backup [ERROR] Daily backup syncronization with BackupServer failed." \
                 >> /var/log/cron.log
         fi
 
     if [[ $(date +'%u') == 1 ]]; then
         
-        userscriptsBackup weekly
-        readmeBackup weekly
-        cp ${sourceDir}/daily/db_backup.sql.gz $sourceDir/weekly
-        tar zcvf - /var/backup/weekly | ssh $sshUser@$sshServer -p $sshPort "cat > $backupDir/$sshClientDir/weekly.tar.gz"
+        cp -r $sourceDir/daily/* $sourceDir/weekly
+
+        tar zcvf - /var/backup/weekly | \
+            ssh $sshUser@$sshServer -p $sshPort "cat > $backupDir/$sshClientDir/weekly.tar.gz"
         
         if [ $? -eq 0 ]; then
-            echo "$(date +'%b %d %H:%M:%S')  Backup [OK] Weekly backup was syncronized with BackupServer." \
+            echo "$(date +'%b %d %H:%M:%S')  Backup [OK] Weekly backup syncronization with BackupServer succeeded." \
                 >> /var/log/cron.log
         else
-            echo "$(date +'%b %d %H:%M:%S')  Backup [ERROR] Weekly backup has not syncronized with BackupServer." \
+            echo "$(date +'%b %d %H:%M:%S')  Backup [ERROR] Weekly backup syncronization with BackupServer failed." \
                 >> /var/log/cron.log
         fi
 

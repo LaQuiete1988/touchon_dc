@@ -4,10 +4,10 @@ ENV TZ=Europe/Moscow
 
 COPY backup.sh /
 
-RUN apk update && apk add --no-cache rsync tzdata openssh-client tar sshpass mysql-client \
+RUN apk update && apk add --no-cache rsync tzdata openssh-client tar mysql-client \
  && mkdir /var/backup/ \
  && crontab -r \
- && crontab -l | { cat; echo "00 02 * * * \
+ && crontab -l | { cat; echo "00 01 * * * \
 cd / && ./backup.sh \
 >> /var/log/cron.log 2>&1"; } | crontab - \
  && chmod +x /backup.sh

@@ -49,8 +49,14 @@ function readmeBackup ()
     fi
 }
 
-if [[ $sshClientDir ]]; then
+# if [[ $sshClientDir ]]; then
+if [[ "${sshClientDir:-unset}" == "unset" ]]; then
+    
+    echo "$(date +'%b %d %H:%M:%S')  Backup [ERROR] SSH_CLIENT_DIR variable in .env file is not set." \
+        >> /var/log/cron.log
 
+else
+    
     userscriptsBackup daily
     readmeBackup daily
 
@@ -83,7 +89,4 @@ if [[ $sshClientDir ]]; then
 
     fi
 
-else
-    echo "$(date +'%b %d %H:%M:%S')  Backup [ERROR] SSH_CLIENT_DIR variable in .env file is not set." \
-        >> /var/log/cron.log
 fi

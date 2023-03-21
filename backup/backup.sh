@@ -6,6 +6,7 @@ backupDir=${SSH_BACKUP_DIR}
 sshUser=${SSH_USER}
 sshServer=${SSH_SERVER}
 sshPort=${SSH_PORT}
+sshClientDir=${SSH_CLIENT_DIR}
 
 function userscriptsBackup ()
 {
@@ -48,14 +49,20 @@ function readmeBackup ()
     fi
 }
 
-if [[ ${SSH_CLIENT_DIR} != "new_client" ]]; then
+# if [[ $sshClientDir ]]; then
+if [[ "${sshClientDir:-unset}" == "unset" ]]; then
+    
+    echo "$(date +'%b %d %H:%M:%S')  Backup [ERROR] SSH_CLIENT_DIR variable in .env file is not set." \
+        >> /var/log/cron.log
 
+else
+    
     userscriptsBackup daily
     readmeBackup daily
 
     tar zcvf - /var/backup/daily | \
-    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${sshUser}@${sshServer} -p ${sshPort} "[ -d ${backupDir}/${SSH_CLIENT_DIR} ] || mkdir ${backupDir}/${SSH_CLIENT_DIR} \
-        && cat > ${backupDir}/${SSH_CLIENT_DIR}/daily.tar.gz"
+    ssh ${sshUser}@${sshServer} -p ${sshPort} "[ -d $backupDir/$sshClientDir ] || mkdir $backupDir/$sshClientDir \
+        && cat > $backupDir/$sshClientDir/daily.tar.gz"
 
     if [ $? -eq 0 ]; then
             echo "$(date +'%b %d %H:%M:%S')  Backup [OK] Daily backup was syncronized with BackupServer." \
@@ -69,8 +76,8 @@ if [[ ${SSH_CLIENT_DIR} != "new_client" ]]; then
         
         userscriptsBackup weekly
         readmeBackup weekly
-        cp ${sourceDir}/daily/db_backup.sql.gz ${sourceDir}/weekly
-        tar zcvf - /var/backup/weekly | ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${sshUser}@${sshServer} -p ${sshPort} "cat > ${backupDir}/${SSH_CLIENT_DIR}/weekly.tar.gz"
+        cp ${sourceDir}/daily/db_backup.sql.gz $sourceDir/weekly
+        tar zcvf - /var/backup/weekly | ssh $sshUser@$sshServer -p $sshPort "cat > $backupDir/$sshClientDir/weekly.tar.gz"
         
         if [ $? -eq 0 ]; then
             echo "$(date +'%b %d %H:%M:%S')  Backup [OK] Weekly backup was syncronized with BackupServer." \
@@ -82,7 +89,4 @@ if [[ ${SSH_CLIENT_DIR} != "new_client" ]]; then
 
     fi
 
-else
-    echo "$(date +'%b %d %H:%M:%S')  Backup [ERROR] SSH_CLIENT_DIR variable in .env file is not set." \
-        >> /var/log/cron.log
 fi

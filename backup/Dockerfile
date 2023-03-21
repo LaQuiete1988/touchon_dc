@@ -4,7 +4,7 @@ ENV TZ=Europe/Moscow
 
 COPY backup.sh /
 
-RUN apk update && apk add --no-cache rsync tzdata openssh-client tar sshpass \
+RUN apk update && apk add --no-cache rsync tzdata openssh-client tar sshpass mysql-client \
  && mkdir /var/backup/ \
  && crontab -r \
  && crontab -l | { cat; echo "00 02 * * * \

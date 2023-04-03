@@ -12,6 +12,7 @@ mysqlUser=${MYSQL_USER}
 mysqlPassword=${MYSQL_PASSWORD}
 mysqlDatabase=${MYSQL_DATABASE}
 
+
 function userscriptsBackup ()
 {
     rsync -azh --delete /var/www/server/userscripts $sourceDir/daily
@@ -66,8 +67,6 @@ function versionsBackup ()
                 >> /var/log/cron.log
     fi
 }
-
-
 
 if [[ ! -d $sourceDir/daily ]]; then
     mkdir $sourceDir/daily

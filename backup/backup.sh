@@ -1,7 +1,7 @@
 #!/usr/bin/env sh                                                                                                                                                                                                                                                                                                                       back>
 
 # Directory to store backups
-sourceDir="/var/backup"
+sourceDir=${SSH_SOURCE_DIR}
 backupDir=${SSH_BACKUP_DIR}
 sshUser=${SSH_USER}
 sshServer=${SSH_SERVER}
@@ -88,7 +88,7 @@ else
     versionsBackup
     dbBackup
 
-    tar zcvf - /var/backup/daily | \
+    tar zcvf - -C $sourceDir/daily . | \
         ssh $sshUser@$sshServer -p $sshPort "[ -d $backupDir/$sshClientDir ] || mkdir $backupDir/$sshClientDir \
         && cat > $backupDir/$sshClientDir/daily.tar.gz"
 
@@ -100,11 +100,11 @@ else
                 >> /var/log/cron.log
         fi
 
-    if [[ $(date +'%u') == 1 ]]; then
+    if [[ $(date +'%u') == 3 ]]; then
         
         cp -r $sourceDir/daily/* $sourceDir/weekly
 
-        tar zcvf - /var/backup/weekly | \
+        tar zcvf - -C $sourceDir/weekly . | \
             ssh $sshUser@$sshServer -p $sshPort "cat > $backupDir/$sshClientDir/weekly.tar.gz"
         
         if [ $? -eq 0 ]; then

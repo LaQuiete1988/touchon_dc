@@ -35,7 +35,6 @@ services:
     volumes:
       - mysqldata:/var/lib/mysql
       - backup:/var/backup
-      - logs:/var/log
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-uroot", "-p$$MYSQL_ROOT_PASSWORD"]
       interval: 5s
@@ -62,7 +61,6 @@ services:
         condition: service_healthy
     volumes:
       - admcore:/var/www
-      - logs:/var/log
     networks:
       - touchon-network
 
@@ -96,7 +94,6 @@ services:
       - admcore:/var/www
       - backup:/var/backup
       - sshkeys:/root/.ssh
-      - logs:/var/log
     depends_on:
       - php-fpm
     networks:
@@ -114,4 +111,3 @@ volumes:
   admcore:
   backup:
   sshkeys:
-  logs:

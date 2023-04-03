@@ -10,6 +10,7 @@ RUN apk update && apk add --no-cache rsync tzdata openssh-client tar mysql-clien
  && crontab -l | { cat; echo "00 01 * * * \
 cd / && ./backup.sh \
 >> /var/log/cron.log 2>&1"; } | crontab - \
- && chmod +x /backup.sh
+ && chmod +x /backup.sh \
+ && touch /var/log/cron.log
 
 CMD /bin/sh -c "crond && tail -f /var/log/cron.log"
